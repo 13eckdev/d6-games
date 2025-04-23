@@ -1,17 +1,15 @@
 /**
- * @typedef {Object} DieCode
- * @prop {String} emoji
- * @prop {Number} value
- *
- */
-
-/**
  * @typedef {Object} DiceRollOptions
  * @param {Number} dice
  * @param {Number} [pips]
  * @param {String} [description]
  */
 
+/**
+ * @typedef {Object} AggregatedDice
+ * @param {Number} total
+ * @param {String} emoji
+ */
 
 import {pickRandom} from "../utils/utils.js";
 import {normalTest, wildTest, normalDice, wildDice} from "../utils/dice.js";
@@ -22,7 +20,6 @@ import {normalTest, wildTest, normalDice, wildDice} from "../utils/dice.js";
  * @param {Boolean} wild
  * @returns {DieCode[]}
  */
-
 const rollDice = (num, wild = false) => {
     const diceToRoll = wild ? wildTest : normalTest;
     return Array.from({length: num}, _ => pickRandom(diceToRoll));
@@ -31,7 +28,7 @@ const rollDice = (num, wild = false) => {
 /**
  *
  * @param {DieCode[]} dice
- * @returns {Object}
+ * @returns {AggregatedDice}
  */
 const aggregateDice = (dice) => dice.reduce( (obj, die) => {
     obj.emoji += `${die.emoji} `;
@@ -109,6 +106,7 @@ const d6 = (interaction) => {
 
     const dice = rollOptions.dice === 1 ? rollDice(1, true) :
         [...rollDice(rollOptions.dice-1), ...rollDice(1, true)];
+
 
     const diceBlock = aggregateDice(dice);
 

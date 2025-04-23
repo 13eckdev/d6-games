@@ -1,5 +1,13 @@
 /**
+ * @typedef {Object} DieCode
+ * @prop {String} emoji
+ * @prop {Number} value
+ *
+ */
+
+/**
  * @type DieCode[]
+ * @desc Normal dice emojis for production
  */
 const normalDice = [
     {emoji: "<:dn1:1274373432150065232>", value: 1},
@@ -13,6 +21,7 @@ const normalDice = [
 
 /**
  * @type DieCode[]
+ * @desc Normal dice emojis for testing
  */
 const normalTest = [
     {emoji: "<:dn1:1274357538480980122>", value: 1},
@@ -26,6 +35,7 @@ const normalTest = [
 
 /**
  * @type DieCode[]
+ * @desc Wild dice emojis for production
  */
 const wildDice = [
     {emoji: "<:wn1:1274373495626928240>", value: 1},
@@ -36,8 +46,10 @@ const wildDice = [
     {emoji: "<:wn6:1274373555475447891>", value: 6}
 ]
 
+
 /**
  * @type DieCode[]
+ * @desc Wild dice emojis for testing
  */
 const wildTest = [
     {emoji: "<:wn1:1274357611868979200>", value: 1},
@@ -47,5 +59,7 @@ const wildTest = [
     // {emoji: "<:wn5:1274357662024208491>", value: 5},
     {emoji: "<:wn6:1274357680122892339>", value: 6}
 ]
+
+
 
 export { normalDice, normalTest, wildDice, wildTest }

@@ -2,11 +2,12 @@
  * @typedef {ApplicationIntegration}
  * @Enum {Number}
  */
-
 const ApplicationIntegration = Object.freeze({
     GUILD_INSTALL: 0,
     USER_INSTALL: 1,
 });
+
+
 /**
  * @Enum {Number}
  * @typedef {ApplicationFlags}
