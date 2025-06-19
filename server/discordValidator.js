@@ -1,7 +1,15 @@
 import {createPublicKey, verify} from "node:crypto";
 import {not} from "../utils/utils.js";
 import d6 from "../commands/d6.js";
-import {exceptional_success, explodeSix, failure, failure_ex, ordinary_success} from "../commands/d6Buttons.js";
+import {
+    complication,
+    exceptional_success,
+    explodeSix,
+    failure,
+    failure_ex,
+    ordinary_success
+} from "../commands/d6Buttons.js";
+import {changeBonus, sendBonus} from "../commands/testing.js";
 
 
 const pubKey = "acda45c91f61e68d267d51d44a3fbd8142859875b77a1f7198421b7ab32f654d";
@@ -30,11 +38,13 @@ const checkAuth = (cxn) => new Promise((resolve) => {
  * @param {Connection} cxn
  * @returns {Promise<Connection>}
  */
-const processPayload = (cxn) => new Promise((resolve) => {
+const processPayload = (cxn) => new Promise((resolve, reject) => {
     const {response, context} = cxn;
     if (not(context.get("verified"))) {
+        context.set("error", "Payload not verified");
+        console.log(context);
         response.writeHead(401, {"Content-Type": "text/plain"}).end("invalid request signature");
-        return resolve(cxn);
+        return reject(cxn);
     }
 
     const body = context.get("body").object();
@@ -57,9 +67,12 @@ const handleCommands = (cxn) => new Promise((resolve) => {
         case "d6":
             reply = d6(context.get("body").object());
             break;
+        case "spellslots":
+            console.log("Sending components");
+            reply = sendBonus();
+            break;
     }
     switch (context.get("body").object().data.custom_id) {
-        case "rolled_1":
         case "explode_6":
             reply = explodeSix(context.get("body").object());
             break;
@@ -69,11 +82,20 @@ const handleCommands = (cxn) => new Promise((resolve) => {
         case "ordinary_success":
             reply = ordinary_success(context.get("body").object());
             break;
+        case "complication":
+            reply = complication(context.get("body").object());
+            break;
         case "failure":
             reply = failure(context.get("body").object());
             break;
         case "failure_ex":
             reply = failure_ex(context.get("body").object());
+            break;
+        case "wis-":
+        case "wis+":
+        case "level-":
+        case "level+":
+            reply = changeBonus(context.get("body").object());
             break;
     }
 

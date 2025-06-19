@@ -18,3 +18,5 @@ const MessageFlags = Object.freeze({
     "HAS_SNAPSHOT": 1 << 14,
     "IS_COMPONENTS_V2": 1 << 15
 });
+
+export { MessageFlags }

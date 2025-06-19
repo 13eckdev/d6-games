@@ -1,18 +1,28 @@
 /**
  * @typedef {Object} DiceRollOptions
- * @param {Number} dice
- * @param {Number} [pips]
- * @param {String} [description]
+ * @prop {Number} dice
+ * @prop {Number} [pips]
+ * @prop {String} [description]
  */
 
 /**
  * @typedef {Object} AggregatedDice
- * @param {Number} total
- * @param {String} emoji
+ * @prop {number} total
+ * @prop {string} emoji
  */
 
 import {pickRandom} from "../utils/utils.js";
 import {normalTest, wildTest, normalDice, wildDice} from "../utils/dice.js";
+import {
+    buttonStyle,
+    componentActionRow,
+    componentButton,
+    componentContainer,
+    componentMessage, componentSeparator, componentTextDisplay
+} from "../utils/discordTypes/components.js";
+import {InteractionCallbackType, interactionResponse} from "../utils/discordTypes/interaction.js";
+import {componentIdentifiers} from "./commandSettings.js";
+
 
 /**
  *
@@ -37,113 +47,86 @@ const aggregateDice = (dice) => dice.reduce( (obj, die) => {
 }, {emoji: "", total: 0});
 
 
-const wildOne = {
-    type: 1,
-    components: [
-        {
-            type: 2,
-            style: 4,
-            custom_id: "complication",
-            label: "Success with complication. +1 Hero Point",
-        },
-        {
-            type: 2,
-            style: 4,
-            custom_id: "failure",
-            label: "Success becomes failure due to complication. +2 Hero Points",
-        },
-        {
-            type: 2,
-            style: 4,
-            custom_id: "failure_ex",
-            label: "Failure accentuated due to complication. +1 Hero Point",
-        }
-    ]
+const addWildOneComponents = () => {
+    const buttons = [
+        componentButton().setLabel("Success with complication. +1 Hero Point").setCustomId("complication").setStyle(buttonStyle.Danger),
+        componentButton().setLabel("Success becomes failure due to complication. +2 Hero Points").setCustomId("failure").setStyle(buttonStyle.Danger),
+        componentButton().setLabel("Failure accentuated due to complication. +1 Hero Point").setCustomId("failure_ex").setStyle(buttonStyle.Danger)
+    ];
+
+    return componentActionRow().addComponents(...buttons);
 }
 
-const wildSix = {
-    type: 1,
-    components: [
-        {
-            type: 2,
-            style: 3,
-            custom_id: "exceptional_success",
-            label: "Exceptional success + 1 Hero Point",
-        },
-        {
-            type: 2,
-            style: 3,
-            custom_id: "ordinary_success",
-            label: "Ordinary success + 2 Hero Points",
-        },
-        {
-            type: 2,
-            style: 3,
-            custom_id: "explode_6",
-            label: "Roll failed? Explode that 6!",
-        }
-    ]
+const addWildSixComponents = () => {
+    const buttons = [
+        componentButton().setLabel("Exceptional success + 1 Hero Point").setCustomId("exceptional_success").setStyle(buttonStyle.Success),
+        componentButton().setLabel("Ordinary success + 2 Hero Points").setCustomId("ordinary_success").setStyle(buttonStyle.Success),
+        componentButton().setLabel("Roll failed? Explode that 6!").setCustomId("explode_6").setStyle(buttonStyle.Success)
+    ];
+
+    return componentActionRow().addComponents(...buttons);
 }
+
+const largeSpacer = componentSeparator().isDivider().largeSpacing();
 
 /**
  *
  * @param {Interaction} interaction
- * @returns {Object} textReply
+ * @returns { InteractionResponse } textReply
  */
 const d6 = (interaction) => {
     /**
      * @type {DiceRollOptions}
      */
-    const rollOptions = interaction?.data?.options.reduce( (obj, opt) => {
+    const rollOptions = interaction.data.options.reduce( (obj, opt) => {
         obj[opt.name] = opt.value;
         return obj;
-    }, {});
+    }, {dice: 0});
 
 
     /**
-     * @type {Array<DieCode>}
+     * @type {DieCode[]}
      */
 
     const dice = rollOptions.dice === 1 ? rollDice(1, true) :
         [...rollDice(rollOptions.dice-1), ...rollDice(1, true)];
 
 
+    /**
+     *
+     * @type {AggregatedDice}
+     */
     const diceBlock = aggregateDice(dice);
 
     const wildValue = dice.at(-1).value;
 
     const description = `${rollOptions.description ? `## "${rollOptions.description}"` : ""}`;
     const diceTotal = `### You got ${diceBlock.total}!`;
-    const emojiLine = `### ${diceBlock.emoji}${rollOptions.pips ? `+${rollOptions.pips}` : ""}`;
+    const emojiLine = `## ${diceBlock.emoji}${rollOptions.pips ? `+${rollOptions.pips}` : ""}`;
 
+    const textLines = [
+        componentTextDisplay().withText(diceTotal).setId(componentIdentifiers.DiceTotal),
+        componentTextDisplay().withText(emojiLine).setId(componentIdentifiers.EmojiLine)
+    ]
 
-    const textLines = [{ type: 10, content: diceTotal }, { type: 10, content: emojiLine }];
+    const container = componentContainer().setAccentColor(3368601);
 
-    if (description !== "") { textLines.unshift({type: 10, content: description}); }
+    if (description !== "") { container.addComponents(componentTextDisplay().withText(description).setId(componentIdentifiers.Description)); }
 
-    const container = {
-        type: 17,
-        accent_color: 3368601,
-        components: textLines
-    }
-
-    let retObj = {
-        type: 4,
-        data: {
-            flags: 1 << 15,
-            components: [container]
-        }
-    }
+    container.addComponents(...textLines);
 
     if (wildValue === 1) {
-        retObj.data.components.push(wildOne);
+        container.addComponents(largeSpacer, addWildOneComponents().setId(componentIdentifiers.Buttons));
     }
 
     if (wildValue === 6) {
-        retObj.data.components.push(wildSix);
+        container.addComponents(largeSpacer, addWildSixComponents().setId(componentIdentifiers.Buttons));
     }
 
-    return retObj;
+    const message = componentMessage().addComponents(container);
+
+    return interactionResponse().setType(InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE).withData(message);
+
 }
 
 

@@ -1,11 +1,13 @@
 import {Enum} from "../utils.js";
 
 
-const InteractionType = Enum("PING",
-    "APPLICATION_COMMAND",
-    "MESSAGE_COMPONENT",
-    "APPLICATION_COMMAND_AUTOCOMPLETE",
-    "MODAL_SUBMIT");
+const InteractionType = Object.freeze({
+    PING: 1,
+    APPLICATION_COMMAND: 2,
+    MESSAGE_COMPONENT: 3,
+    APPLICATION_COMMAND_AUTOCOMPLETE: 4,
+    MODAL_SUBMIT: 5
+});
 
 /**
  * @Enum {Number}
@@ -18,7 +20,19 @@ const InteractionContextType = Object.freeze({GUILD: 0, BOT_DM: 1, PRIVATE_CHANN
  * @typedef {Object} ApplicationCommandOptionType
  * @enum {Number}
  */
-const ApplicationCommandOptionType = Enum("SUB_COMMAND", "SUB_COMMAND_GROUP", "STRING", "INTEGER", "BOOLEAN", "USER", "CHANNEL", "ROLE", "MENTIONABLE", "NUMBER", "ATTACHMENT")
+const ApplicationCommandOptionType = Object.freeze({
+    SUB_COMMAND: 1,
+    SUB_COMMAND_GROUP: 2,
+    STRING: 3,
+    INTEGER: 4,
+    BOOLEAN: 5,
+    USER: 6,
+    CHANNEL: 7,
+    ROLE: 8,
+    MENTIONABLE: 9,
+    NUMBER: 10,
+    ATTACHMENT: 11
+});
 
 
 /**
@@ -37,6 +51,30 @@ const InteractionCallbackType = Object.freeze({
     "LAUNCH_ACTIVITY": 12
 })
 
+
+const interactionResponse = () => {
+    const _data = {
+        type: undefined,
+    }
+
+    const _R = {}
+
+    _R.setType = function(type) {
+        _data.type = type;
+        return this;
+    }
+
+    _R.withData = function(data) {
+        _data.data = data;
+        return this;
+    }
+
+    _R.toJSON = function() {
+        return _data;
+    }
+
+    return _R;
+}
 
 /**
  * @typedef {Object} Interaction
@@ -170,3 +208,6 @@ const InteractionCallbackType = Object.freeze({
  * @prop {Boolean=} response_message_loading
  * @prop {Boolean=} response_message_ephemeral
  */
+
+
+export { InteractionType, InteractionContextType, ApplicationCommandOptionType, InteractionCallbackType, interactionResponse }

@@ -5,163 +5,175 @@
  */
 import {pickRandom} from "../utils/utils.js";
 import { wildTest} from "../utils/dice.js";
+import {
+    componentContainer,
+    componentMessage,
+    componentSeparator,
+    componentTextDisplay
+} from "../utils/discordTypes/components.js";
+import {componentIdentifiers} from "./commandSettings.js";
+import {InteractionCallbackType, interactionResponse} from "../utils/discordTypes/interaction.js";
+
+/**
+ *
+ * @type {InteractionResponse}
+ */
+const wrongUser = interactionResponse().setType(InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE)
+        .withData(componentMessage().isEphemeral()
+            .addComponents(componentTextDisplay().withText("You don't have permission to do that"))
+        );
 
 
-const wrongUser = {
-    type: 4,
-    data: {
-        content: "You don't have permission to do that",
-        flags: 64
+
+const decomposeComponents = (interaction) => {
+    let desc, emoji, total;
+
+    for (const component of interaction.message.components[0].components) {
+        if (component.id === componentIdentifiers.Description) {
+            desc = component.content;
+        } else if (component.id === componentIdentifiers.EmojiLine) {
+            emoji = component.content;
+        } else if (component.id === componentIdentifiers.DiceTotal) {
+            total = component.content;
+        }
     }
+
+        const retVal = { emoji, total }
+        retVal.user = interaction.member.nick ?? interaction.member.user.username;
+        if (desc) { retVal.desc = desc; }
+
+        return retVal;
+}
+
+/**
+ *
+ * @param { string } desc
+ * @param { number } total
+ * @param { string } emoji
+ * @param { string } result
+ * @returns { object }
+ */
+const composeReturnMessage = ({desc, total, emoji, result}) => {
+    const container = componentContainer().setAccentColor(3368601);
+
+    if (desc) { container.addComponents(componentTextDisplay().withText(desc)); }
+    container.addComponents(componentTextDisplay().withText(`### You got ${total}!`),
+        componentTextDisplay().withText(emoji),
+        componentSeparator().largeSpacing().isDivider(),
+        componentTextDisplay().withText(result));
+
+    return componentMessage().addComponents(container);
 }
 
 
-const decomposeComponents = (components) => components.length === 2 ? {desc: "", emoji: components[1], total: components[0]} : {desc: components[0], emoji: components[2], total: components[1]};
-
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const explodeSix = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components[0].components;
-    const user = interaction.member.nick ?? interaction.member.user.username;
 
-    let {desc, emoji, total} = decomposeComponents(innerComponents);
-    total = Number(innerComponents[1].content.split(" ")[3].replace("!", ""));
-
-    emoji.content += " | "
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
+    total = Number(total.split(" ").at(-1).replace("!", ""));
+    emoji += " | "
 
     let newDie;
 
     do {
         newDie = pickRandom(wildTest);
         total += newDie.value;
-        emoji.content += `${newDie.emoji} `;
+        emoji += `${newDie.emoji} `;
     } while (newDie.value === 6)
 
-    const container = {
-        type: 17,
-        accent_color: 3368601,
-        components: [{type: 10, content: `### You got ${total}!`}, emoji, {type: 10, content: `-# ${user} exploded the wild die`}]
-    }
 
-    if (desc !== "") { container.components.unshift(desc); }
-
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: [container]
-        }
-    }
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} exploded the wild die`});
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
-
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const exceptional_success = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components//.components;
-    innerComponents.pop();
 
-    const user = interaction.member.nick ?? interaction.member.user.username;
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    innerComponents.push({type: 10, content: `-# ${user} achieves an exceptional success and gained 1 Hero Point`})
+    const message = composeReturnMessage({desc, total, emoji, result:`-# ${user} achieves an exceptional success and gained 1 Hero Point`});
 
-
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: innerComponents
-        }
-    }
-
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
 
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const ordinary_success = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components//.components;
-    innerComponents.pop();
 
-    const user = interaction.member.nick ?? interaction.member.user.username;
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
+    const message = composeReturnMessage({desc, total, emoji, result: `-# ${user} gained 2 Hero Points`});
 
-    innerComponents.push({type: 10, content: `-# ${user} gained 2 Hero Points`})
-
-
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: innerComponents
-        }
-    }
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
 
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const complication = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components//.components;
-    innerComponents.pop();
 
-    const user = interaction.member.nick ?? interaction.member.user.username;
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    innerComponents.push({type: 10, content: `-# ${user} succees with a complication and gained 1 Hero Point`})
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} succeeds with a complication and gained 1 Hero Point`});
 
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: innerComponents
-        }
-    }
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
-
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const failure = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components//.components;
-    innerComponents.pop();
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    const user = interaction.member.nick ?? interaction.member.user.username;
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} turned a success into a failure due to a complication and gained 2 Hero Points`});
 
-    innerComponents.push({type: 10, content: `-# ${user} turned a success into a failure due to a complication and gained 2 Hero Points`})
-
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: innerComponents
-        }
-    }
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
-
+/**
+ *
+ * @param { Interaction } interaction
+ * @returns { InteractionResponse }
+ */
 const failure_ex = (interaction) => {
     if (interaction.message.interaction_metadata.user.id !== interaction.member.user.id) {
         return wrongUser;
     }
-    const innerComponents = interaction.message.components//.components;
-    innerComponents.pop();
 
-    const user = interaction.member.nick ?? interaction.member.user.username;
-
-    innerComponents.push({type: 10, content: `-# ${user}'s failure is accentuate due to a complication and gained 1 Hero Point`})
-
-    return {
-        type: 7,
-        data: {
-            flags: 1 << 15,
-            components: innerComponents
-        }
-    }
+    let {desc, emoji, total, user} = decomposeComponents(interaction);
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user}'s failure is accentuate due to a complication and gained 1 Hero Point`});
+    return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
-
 
 export { explodeSix, exceptional_success, ordinary_success, complication, failure, failure_ex };
