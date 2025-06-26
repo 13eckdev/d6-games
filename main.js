@@ -20,7 +20,7 @@ const server = createServer((req, res) => {
         .then(checkAuth)
         .then(processPayload)
         .then(handleCommands)
-        .catch((cxn) => console.error("Something went wrong", cxn.context.get("error")));
+        .catch(console.error);
 });
 
 server.listen(9001, () => console.log("listening on port 9001"))

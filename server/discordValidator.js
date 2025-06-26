@@ -42,7 +42,6 @@ const processPayload = (cxn) => new Promise((resolve, reject) => {
     const {response, context} = cxn;
     if (not(context.get("verified"))) {
         context.set("error", "Payload not verified");
-        console.log(context);
         response.writeHead(401, {"Content-Type": "text/plain"}).end("invalid request signature");
         return reject(cxn);
     }
@@ -61,18 +60,18 @@ const processPayload = (cxn) => new Promise((resolve, reject) => {
 const handleCommands = (cxn) => new Promise((resolve) => {
     const {response, context} = cxn;
     if (response.writableEnded) return resolve(cxn);
-
+    console.log(JSON.stringify(context.get("body").object().data, null, 2));
     let reply;
     switch (context.get("body").object().data.name) {
         case "d6":
             reply = d6(context.get("body").object());
             break;
         case "spellslots":
-            console.log("Sending components");
             reply = sendBonus();
             break;
     }
-    switch (context.get("body").object().data.custom_id) {
+    const select = context.get("body").object().data?.values ? context.get("body").object().data.values[0] : "";
+    switch (select) {
         case "explode_6":
             reply = explodeSix(context.get("body").object());
             break;

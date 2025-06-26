@@ -54,9 +54,6 @@ const wildDice = [
 const wildTest = [
     {emoji: "<:wn1:1274357611868979200>", value: 1},
     {emoji: "<:wn2:1274357622081978480>", value: 2},
-    // {emoji: "<:wn3:1274357633834553436>", value: 3},
-    // {emoji: "<:wn4:1274357648476602408>", value: 4},
-    // {emoji: "<:wn5:1274357662024208491>", value: 5},
     {emoji: "<:wn6:1274357680122892339>", value: 6}
 ]
 

@@ -12,13 +12,11 @@
  */
 
 import {pickRandom} from "../utils/utils.js";
-import {normalTest, wildTest, normalDice, wildDice} from "../utils/dice.js";
+import {normalDice, wildDice} from "../utils/dice.js";
 import {
-    buttonStyle,
     componentActionRow,
-    componentButton,
     componentContainer,
-    componentMessage, componentSeparator, componentTextDisplay
+    componentMessage, componentSeparator, componentStringSelect, componentTextDisplay, selectOption
 } from "../utils/discordTypes/components.js";
 import {InteractionCallbackType, interactionResponse} from "../utils/discordTypes/interaction.js";
 import {componentIdentifiers} from "./commandSettings.js";
@@ -31,7 +29,7 @@ import {componentIdentifiers} from "./commandSettings.js";
  * @returns {DieCode[]}
  */
 const rollDice = (num, wild = false) => {
-    const diceToRoll = wild ? wildTest : normalTest;
+    const diceToRoll = wild ? wildDice : normalDice;
     return Array.from({length: num}, _ => pickRandom(diceToRoll));
 }
 
@@ -46,25 +44,22 @@ const aggregateDice = (dice) => dice.reduce( (obj, die) => {
     return obj;
 }, {emoji: "", total: 0});
 
+const addWildOneSelect = () => {
+    const select = componentStringSelect().setCustomId("wildone").addPlaceholder("Wild die is a 1!")
+        .addOption(selectOption().setLabel("Complication").setValue("complication").addDescription("(On success)").addEmoji({name: "p1", id: "1387813975088959658"}))
+        .addOption(selectOption().setLabel("Failure").setValue("failure").addDescription("(On success)").addEmoji({name: "p2", id: "1387813987726528651"}))
+        .addOption(selectOption().setLabel("Exceptional failure").setValue("failure_ex").addDescription("(On failure)").addEmoji({name: "p1", id: "1387813975088959658"}))
 
-const addWildOneComponents = () => {
-    const buttons = [
-        componentButton().setLabel("Success with complication. +1 Hero Point").setCustomId("complication").setStyle(buttonStyle.Danger),
-        componentButton().setLabel("Success becomes failure due to complication. +2 Hero Points").setCustomId("failure").setStyle(buttonStyle.Danger),
-        componentButton().setLabel("Failure accentuated due to complication. +1 Hero Point").setCustomId("failure_ex").setStyle(buttonStyle.Danger)
-    ];
-
-    return componentActionRow().addComponents(...buttons);
+    return componentActionRow().addComponents(select);
 }
 
-const addWildSixComponents = () => {
-    const buttons = [
-        componentButton().setLabel("Exceptional success + 1 Hero Point").setCustomId("exceptional_success").setStyle(buttonStyle.Success),
-        componentButton().setLabel("Ordinary success + 2 Hero Points").setCustomId("ordinary_success").setStyle(buttonStyle.Success),
-        componentButton().setLabel("Roll failed? Explode that 6!").setCustomId("explode_6").setStyle(buttonStyle.Success)
-    ];
+const addWildSixSelect = () => {
+    const select = componentStringSelect().setCustomId("wildsix").addPlaceholder("Wild die is a 6!")
+        .addOption(selectOption().setLabel("Exceptional Success").setValue("exceptional_success").addDescription("(On success)").addEmoji({name: "p1", id: "1387813975088959658"}))
+        .addOption(selectOption().setLabel("Ordinary Success").setValue("ordinary_success").addDescription("(On success)").addEmoji({name: "p2", id: "1387813987726528651"}))
+        .addOption(selectOption().setLabel("Explode Wild Die").setValue("explode_6").addDescription("(On failure)").addEmoji({name: "reroll", id: "1387813070381781114"}))
 
-    return componentActionRow().addComponents(...buttons);
+    return componentActionRow().addComponents(select);
 }
 
 const largeSpacer = componentSeparator().isDivider().largeSpacing();
@@ -83,14 +78,12 @@ const d6 = (interaction) => {
         return obj;
     }, {dice: 0});
 
-
     /**
      * @type {DieCode[]}
      */
 
     const dice = rollOptions.dice === 1 ? rollDice(1, true) :
         [...rollDice(rollOptions.dice-1), ...rollDice(1, true)];
-
 
     /**
      *
@@ -109,18 +102,18 @@ const d6 = (interaction) => {
         componentTextDisplay().withText(emojiLine).setId(componentIdentifiers.EmojiLine)
     ]
 
-    const container = componentContainer().setAccentColor(3368601);
+    const container = componentContainer();
 
     if (description !== "") { container.addComponents(componentTextDisplay().withText(description).setId(componentIdentifiers.Description)); }
 
     container.addComponents(...textLines);
 
     if (wildValue === 1) {
-        container.addComponents(largeSpacer, addWildOneComponents().setId(componentIdentifiers.Buttons));
+        container.addComponents(largeSpacer, addWildOneSelect().setId(componentIdentifiers.Buttons));
     }
 
     if (wildValue === 6) {
-        container.addComponents(largeSpacer, addWildSixComponents().setId(componentIdentifiers.Buttons));
+        container.addComponents(largeSpacer, addWildSixSelect());//.addId(componentIdentifiers.Buttons));
     }
 
     const message = componentMessage().addComponents(container);

@@ -246,6 +246,88 @@ const componentContainer = () => {
 }
 
 
+const componentStringSelect = () => {
+    const data = {
+        type: componentType.StringSelect,
+        options: []
+    }
+
+    const _S = {}
+
+    _S.addId = function(id) {
+        data.id = id;
+        return this;
+    }
+
+    _S.setCustomId = function(id){
+        data.custom_id = id;
+        return this;
+    }
+
+    _S.addOption = function(selectOption) {
+        data.options.push(selectOption);
+        return this;
+    }
+
+    _S.setMinValue = function(minValue) {
+        data.min_value = minValue;
+        return this;
+    }
+
+    _S.setMaxValue = function(maxValue) {
+        data.max_value = maxValue;
+        return this;
+    }
+
+    _S.addPlaceholder = function(placeholder) {
+        data.placeholder = placeholder;
+        return this;
+    }
+
+    _S.disabled = function() {
+        data.disabled = true;
+    }
+
+    _S.toJSON = () => data;
+
+    return _S;
+}
 
 
-export { componentMessage, componentActionRow, componentButton, componentTextDisplay, componentSeparator, componentContainer, buttonStyle };
+const selectOption = () => {
+    const data = {}
+
+    const _S = {}
+
+    _S.setLabel = function(label) {
+        data.label = label;
+        return this;
+    }
+
+    _S.setValue = function(value) {
+        data.value = value;
+        return this;
+    }
+
+    _S.addDescription = function(description) {
+        data.description = description;
+        return this;
+    }
+
+    _S.addEmoji = function(emojiObject) {
+        data.emoji = emojiObject;
+        return this;
+    }
+
+    _S.isDefault = function() {
+        data.default = true;
+        return this;
+    }
+
+    _S.toJSON = () => data;
+
+    return _S;
+}
+
+
+export { componentMessage, componentActionRow, componentButton, componentTextDisplay, componentSeparator, componentContainer, buttonStyle, componentStringSelect, selectOption };

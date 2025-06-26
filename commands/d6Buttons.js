@@ -4,7 +4,7 @@
  * @returns {Object} textReply
  */
 import {pickRandom} from "../utils/utils.js";
-import { wildTest} from "../utils/dice.js";
+import { wildDice } from "../utils/dice.js";
 import {
     componentContainer,
     componentMessage,
@@ -54,7 +54,7 @@ const decomposeComponents = (interaction) => {
  * @returns { object }
  */
 const composeReturnMessage = ({desc, total, emoji, result}) => {
-    const container = componentContainer().setAccentColor(3368601);
+    const container = componentContainer();
 
     if (desc) { container.addComponents(componentTextDisplay().withText(desc)); }
     container.addComponents(componentTextDisplay().withText(`### You got ${total}!`),
@@ -83,7 +83,7 @@ const explodeSix = (interaction) => {
     let newDie;
 
     do {
-        newDie = pickRandom(wildTest);
+        newDie = pickRandom(wildDice);
         total += newDie.value;
         emoji += `${newDie.emoji} `;
     } while (newDie.value === 6)
@@ -105,7 +105,7 @@ const exceptional_success = (interaction) => {
 
     let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    const message = composeReturnMessage({desc, total, emoji, result:`-# ${user} achieves an exceptional success and gained 1 Hero Point`});
+    const message = composeReturnMessage({desc, total, emoji, result:`-# ${user} achieves an exceptional success and gains 1 Hero Point`});
 
     return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
@@ -122,7 +122,7 @@ const ordinary_success = (interaction) => {
     }
 
     let {desc, emoji, total, user} = decomposeComponents(interaction);
-    const message = composeReturnMessage({desc, total, emoji, result: `-# ${user} gained 2 Hero Points`});
+    const message = composeReturnMessage({desc, total, emoji, result: `-# ${user} achieves a normal success and gains 2 Hero Points`});
 
     return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
@@ -140,7 +140,7 @@ const complication = (interaction) => {
 
     let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} succeeds with a complication and gained 1 Hero Point`});
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} succeeds with a complication and gains 1 Hero Point`});
 
     return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
@@ -156,7 +156,7 @@ const failure = (interaction) => {
     }
     let {desc, emoji, total, user} = decomposeComponents(interaction);
 
-    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} turned a success into a failure due to a complication and gained 2 Hero Points`});
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user} turned a success into a failure due to a complication and gains 2 Hero Points`});
 
     return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
@@ -172,7 +172,7 @@ const failure_ex = (interaction) => {
     }
 
     let {desc, emoji, total, user} = decomposeComponents(interaction);
-    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user}'s failure is accentuate due to a complication and gained 1 Hero Point`});
+    const message = composeReturnMessage({desc, emoji, total, result: `-# ${user}'s failure is accentuate due to a complication and gains 1 Hero Point`});
     return interactionResponse().setType(InteractionCallbackType.UPDATE_MESSAGE).withData(message);
 }
 
