@@ -76,7 +76,7 @@ const d6 = (interaction) => {
     const rollOptions = interaction.data.options.reduce( (obj, opt) => {
         obj[opt.name] = opt.value;
         return obj;
-    }, {dice: 0});
+    }, {dice: 0, pips: 0});
 
     /**
      * @type {DieCode[]}
@@ -94,7 +94,7 @@ const d6 = (interaction) => {
     const wildValue = dice.at(-1).value;
 
     const description = `${rollOptions.description ? `## "${rollOptions.description}"` : ""}`;
-    const diceTotal = `### You got ${diceBlock.total}!`;
+    const diceTotal = `### You got ${diceBlock.total + rollOptions.pips}!`;
     const emojiLine = `## ${diceBlock.emoji}${rollOptions.pips ? `+${rollOptions.pips}` : ""}`;
 
     const textLines = [
