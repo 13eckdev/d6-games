@@ -12,7 +12,7 @@
  */
 
 import {pickRandom} from "../utils/utils.js";
-import {normalDice, wildDice} from "../utils/dice.js";
+import { normalDice, wildDice} from "../utils/dice.js";
 import {
     componentActionRow,
     componentContainer,
