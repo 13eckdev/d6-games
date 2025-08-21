@@ -57,7 +57,7 @@ const composeReturnMessage = ({desc, total, emoji, result}) => {
     const container = componentContainer();
 
     if (desc) { container.addComponents(componentTextDisplay().withText(desc)); }
-    container.addComponents(componentTextDisplay().withText(`### You got ${total}!`),
+    container.addComponents(componentTextDisplay().withText(total),
         componentTextDisplay().withText(emoji),
         componentSeparator().largeSpacing().isDivider(),
         componentTextDisplay().withText(result));
